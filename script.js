@@ -7,6 +7,34 @@ const tabsContent = document.querySelectorAll('.operations__content');
 const nav = document.querySelector('.nav');
 const initialCoords = section1.getBoundingClientRect();
 const header = document.querySelector('.header');
+const sections = document.querySelectorAll('.section');
+const btnsShowModal = document.querySelectorAll('.btn--show-modal');
+const modal = document.querySelector('.modal');
+const overlay = document.querySelector('.overlay');
+const btnCloseModal = document.querySelector('.btn--close-modal');
+const images = document.querySelectorAll('img[data-src]');
+
+const openModal = e => {
+  e.preventDefault();
+  modal.classList.remove('hidden');
+  overlay.classList.remove('hidden');
+};
+const closeModal = e => {
+  e.preventDefault();
+  modal.classList.add('hidden');
+  overlay.classList.add('hidden');
+};
+
+btnsShowModal.forEach(btn => btn.addEventListener('click', openModal));
+btnCloseModal.addEventListener('click', closeModal);
+overlay.addEventListener('click', closeModal);
+
+document.addEventListener('keydown', e => {
+  console.log(e);
+  if (e.key === 'Escape') {
+    closeModal();
+  }
+});
 
 btn.addEventListener('click', () => {
   section1.scrollIntoView({
@@ -83,3 +111,51 @@ const observeOpt = {
 
 const headerObserver = new IntersectionObserver(styckyNav, observeOpt);
 headerObserver.observe(header);
+
+const revealSection = (entries, observer) => {
+  const [entry] = entries;
+
+  if (!entry.isIntersecting) return;
+
+  entry.target.classList.remove('section--hidden');
+  observer.unobserve(entry.target);
+};
+
+const sectionObserveOpt = {
+  root: null,
+  treshold: 0.15,
+};
+
+const sectionObserver = new IntersectionObserver(
+  revealSection,
+  sectionObserveOpt
+);
+
+sections.forEach(section => {
+  sectionObserver.observe(section);
+  section.classList.add('section--hidden');
+});
+
+///// lazy loading
+
+const loadImg = (entries, observer) => {
+  const [entry] = entries;
+  console.log(entry);
+
+  if (!entry.isIntersecting) return;
+
+  entry.target.src = entry.target.dataset.src;
+  entry.target.addEventListener('load', () => {
+    entry.target.classList.remove('lazy-img');
+  });
+  observer.unobserve(entry.target);
+};
+
+imgObsOpt = {
+  root: null,
+  treshold: 0,
+  rootMargin: '-200px',
+};
+
+const imgObserever = new IntersectionObserver(loadImg, imgObsOpt);
+images.forEach(img => imgObserever.observe(img));
